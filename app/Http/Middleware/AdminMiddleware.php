@@ -7,20 +7,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class MiddlewareUser
+class AdminMiddleware
 {
     /**
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        if ($user->hasRole("admin") || $user->hasRole("user")) {
+
+        if ($user->hasAnyRole('admin')) {
             return $next($request);
         }
-        return response()->json(['message' => 'You are not admin'], 401);
-        
+
+        return response()->json(['message' => 'You are not authorized'], 403);
     }
 }

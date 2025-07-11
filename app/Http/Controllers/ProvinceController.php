@@ -9,16 +9,23 @@ use Illuminate\Support\Facades\Validator;
 
 class ProvinceController extends Controller
 {
-    public function index(){
-        $provinces = Province::with(['user'=>function($q){
-            $q->select('id','name');
-        }])->get();
-        return response()->json([
-            "provinces"=> $provinces,
-            'status'=>201
-        ],201);
-    }
+    public function index() {
+    $user = Auth::user();
+
+    $provinces = Province::with([
+        'user:id,name'
+    ])
+    ->where('company_id', $user->company_id) // 🔒 Filter by company
+    ->get();
+
+    return response()->json([
+        "provinces" => $provinces,
+        "status" => 200
+    ], 200); // ✅ 200 is correct status for successful GET
+}
+
     public function store(Request $request){
+        $user = Auth::user();
         $validate = Validator::make($request->all(), [
             'name'=> 'required',
         ]);
@@ -29,11 +36,25 @@ class ProvinceController extends Controller
         }
         $province = new Province();
         $province->name = $request->name;
-        $province->user_id = Auth::user()->id;
+        $province->user_id = $user->id;
+        $province->company_id = $user-> company_id;
         $province->save();
             return response()->json([
                 'message'=> 'province created successfully',
                 'status'=> 200
             ],200);
+    }
+    public function delete ($id){
+        $province = Province::find($id);
+        if (!$province) {
+            return response()-> json([
+                'message'=> 'province not found',
+        
+            ],404);
+        }
+        $province->delete();
+        return response()->json([
+            'message'=> 'province deleted successfully',
+        ],201);
     }
 }

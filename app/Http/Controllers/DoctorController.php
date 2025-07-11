@@ -11,27 +11,29 @@ use Illuminate\Support\Facades\Validator;
 class DoctorController extends Controller
 {
     //
-    public function index(){
-        $doctors = Doctor::with(['user'=> function($q){
-            $q->select('id','name');
-        }])->get()->map(function ($d) {
-        if ($d->image) {
-            $d->image = url('doctor/' . $d->image);
-        } else {
-            $d->image = null; 
-        }
-        return $d;
-    });;
-        
-        return response()->json([
-            "doctors"=> $doctors,
-            "status"=> "success",
-        ],201);
-    }
+    public function index()
+{
+    $user = Auth::user();
+
+    $doctors = Doctor::with(['user:id,name'])
+        ->where('company_id', $user->company_id)
+        ->get()
+        ->map(function ($d) {
+            $d->image = $d->image ? url('doctor/' . $d->image) : null;
+            return $d;
+        });
+
+    return response()->json([
+        "doctors" => $doctors,
+        "status" => "success",
+    ], 200);
+}
+
 
 
    public function store(Request $request)
     {
+        $user = Auth::user();
        $validate = Validator::make($request->all(),[
             'name' => 'required|string|max:255',
             'speciatly' => 'required|string|max:255',
@@ -48,11 +50,11 @@ class DoctorController extends Controller
 
         $doctor = new Doctor();
         $doctor->name = $request->name;
-        $doctor->user_id = Auth::user()->id; 
+        $doctor->user_id = $user->id; 
+        $doctor->company_id =$user->company_id;
         $doctor->speciatly = $request->speciatly;
         $doctor->email = $request->email;
         $doctor->status = $request->status;
-
         
         if ($request->hasFile('image')){
             $file = $request->file('image');

@@ -16,6 +16,7 @@ class UserController extends Controller
             'id'       => $user->id,
             'name'     => $user->name,
             'email'    => $user->email,
+            'company' => $user-> company->name,
             'phone'    => $user->phone,
             'status'   => $user->status,
             'role'     => $user->getRoleNames()->first(), // get first role name
@@ -37,15 +38,17 @@ class UserController extends Controller
         'password' => 'required|string|min:8',
         'phone'    => 'nullable|string|max:20',
         'role' => 'required|string|exists:roles,name',
-        'status'   => 'nullable|in:active,inactive', // or adjust based on your app logic
+        'status'   => 'nullable|in:active,inactive', 
+        'company_id'=>'required'
     ]);
 
     $user = User::create([
         'name'     => $validated['name'],
         'email'    => $validated['email'],
         'password' => Hash::make($validated['password']),
+        'company_id'=> $validated['company_id'],
         'phone'    => $validated['phone'] ?? null,
-        'status'   => $validated['status'] ?? 'active', // default to 'active' if not provided
+        'status'   => $validated['status'] ?? 'active', 
     ]);
     $user->assignRole($validated['role']);
     $user->load('roles');
@@ -54,13 +57,13 @@ class UserController extends Controller
         'user'    => $user,
     ], 201);
 }
-public function delete ($id){
-    
-        $user = User::find($id);
-        $user->delete();
-        return response()->json([
-            'message'=> 'delete success',
-        ],201);
-}
+    public function delete ($id){
+        
+            $user = User::find($id);
+            $user->delete();
+            return response()->json([
+                'message'=> 'delete success',
+            ],201);
+    }
 
 }

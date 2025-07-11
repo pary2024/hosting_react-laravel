@@ -9,17 +9,25 @@ use Illuminate\Support\Facades\Validator;
 
 class AppointmentStudentController extends Controller
 {
-     public function index(){
-        $appointmentStudent = AppointmentStudent::with([
-            'user:id,name',
-            'student:id,name',
-            'doctor:id,name'
-        ])->get();
-        return response()->json([
-            'appointmentStudents'=> $appointmentStudent
-        ],201);
-    }
+     public function index()
+{
+    $user = Auth::user();
+
+    $appointmentStudents = AppointmentStudent::with([
+        'user:id,name',
+        'student:id,name',
+        'doctor:id,name'
+    ])
+    ->where('company_id', $user->company_id) // 🔒 Company-level data filtering
+    ->get();
+
+    return response()->json([
+        'appointmentStudents' => $appointmentStudents
+    ], 200); // ✅ Use 200 for successful GET
+}
+
     public function store(Request $request){
+        $user = Auth::user();
        $validate = Validator::make($request->all(), [
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
@@ -38,7 +46,8 @@ class AppointmentStudentController extends Controller
         $apptStudent->doctor_id = $request->doctor_id;
         $apptStudent->time_in = $request->time_in;
         $apptStudent->time_out = $request->time_out;
-        $apptStudent->user_id = Auth::user()->id;
+        $apptStudent->user_id = $user->id;
+        $apptStudent->company_id= $user-> company_id;
         $apptStudent->save();
         return response()->json([
             'appointmentStudent'=> $apptStudent

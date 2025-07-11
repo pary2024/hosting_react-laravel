@@ -9,17 +9,23 @@ use Illuminate\Support\Facades\Validator;
 
 class MessageController extends Controller
 {
-    public function index(){
-        $sms = Message::with([
+    public function index() {
+    $user = Auth::user();
+
+    $sms = Message::with([
             'user:id,name',
             'patient:id,name'
-        ])->get();
-        return response()->json([
-            "messages"=> $sms,
-            
-        ], 200);
-    }
+        ])
+        ->where('company_id', $user->company_id) // 🔐 Filter by company
+        ->get();
+
+    return response()->json([
+        "messages" => $sms,
+    ], 200); // ✅ 200 OK for GET requests
+}
+
     public function store(Request $request){
+        $user =Auth::user();
        $validate = Validator::make($request->all(), [
         'patient_id' => 'required|exists:patients,id',
         'phone' => 'required|string|max:20',
@@ -34,7 +40,8 @@ class MessageController extends Controller
     $sms->phone = $request->phone;
     $sms->note = $request->note;
     $sms->patient_id = $request->patient_id;
-    $sms->user_id = Auth::user()->id;
+    $sms->user_id =$user->id;
+    $sms->company_id =$user-> company_id;
     $sms ->save();
     return response()->json([
         'message'=> $sms,

@@ -14,6 +14,7 @@ use App\Models\Treat;
 use App\Models\PerPay;
 use App\Models\AppointmentStudent;
 use App\Models\AppointmentPatient;
+use App\Models\Company;
 use App\Models\InvoiceStudent;
 use App\Models\InvoicePatient;
 use App\Models\Message;
@@ -23,27 +24,33 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
+            $superAdminRole =  Role::firstOrCreate(['name' => 'super admin']);
+         
+            
 
-        // Create Users
-        $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'phone' => '0123456789',
-            'status' => 'active',
-        ]);
-        $admin->assignRole($adminRole);
+           $superCompany = Company::create([
+                'name' => 'super Company',
+                'phone'=> '0714877555',
+                'address'=>'phnom penh',
+                'email'=>'company@gmail.com'
+                ]);
+           
+          
 
-        $user = User::create([
-            'name' => 'Regular User',
-            'email' => 'user@example.com',
+            $admin = User::create([
+            'name' => 'super Admin',
+            'email' => 'superAdmin@example.com',
             'password' => Hash::make('password'),
-            'phone' => '0987654321',
+            'phone' => '012346789',
+            'company_id' =>  $superCompany->id,
             'status' => 'active',
-        ]);
-        $user->assignRole($userRole);
+            ]);
+            $admin -> assignRole($superAdminRole);
+          
+           
+            // Create Users
+          
+     
 
         // Province
       

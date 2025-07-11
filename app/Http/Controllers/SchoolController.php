@@ -10,26 +10,33 @@ use Illuminate\Support\Facades\Validator;
 class SchoolController extends Controller
 {
     //
-   public function index()
+  public function index()
 {
+    $user = Auth::user();
+
     $schools = School::with([
         'user:id,name',
         'province:id,name',
-    ])->get()->map(function ($school) {
+    ])
+    ->where('company_id', $user->company_id)  // Filter by company
+    ->get()
+    ->map(function ($school) {
         if ($school->image) {
             $school->image = url('school/' . $school->image);
         } else {
-            $school->image = null; // Or a default image URL if needed
+            $school->image = null; // or default image URL
         }
         return $school;
     });
 
     return response()->json([
         'schools' => $schools,
-        'status' => 201
-    ], 201);
+        'status' => 200
+    ], 200);
 }
+
     public function store(Request $request){
+        $user = Auth::user();
         $validate = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'province_id' => 'required|exists:provinces,id',
@@ -44,7 +51,8 @@ class SchoolController extends Controller
        }
        $school = new School();
        $school->name = $request->name;
-       $school->user_id = Auth::user()->id;
+       $school->user_id = $user->id;
+       $school->company_id = $user-> company_id;
        $school->province_id = $request->province_id;
        $school->tabLine = $request->tabLine;
        $school->location = $request->location;

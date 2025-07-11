@@ -9,17 +9,25 @@ use Illuminate\Support\Facades\Validator;
 
 class AppointmentPatientController extends Controller
 {
-    public function index(){
-        $appointmentPatients = AppointmentPatient::with([
-            'user:id,name',
-            'patient:id,name',
-            'doctor:id,name'
-        ])->get();
-        return response()->json([
-            'appointmentPatients'=> $appointmentPatients
-        ],201);
-    }
+    public function index()
+{
+    $user = Auth::user();
+
+    $appointmentPatients = AppointmentPatient::with([
+        'user:id,name',
+        'patient:id,name',
+        'doctor:id,name'
+    ])
+    ->where('company_id', $user->company_id) // 👈 Ensure data isolation per company
+    ->get();
+
+    return response()->json([
+        'appointmentPatients' => $appointmentPatients
+    ], 200); // 200 is the correct status for GET
+}
+
     public function store(Request $request){
+        $user = Auth::user();
         $validate = Validator::make($request->all(), [
                 'patient_id' => 'required|exists:patients,id',
                 'doctor_id' => 'required|exists:doctors,id',
@@ -40,7 +48,8 @@ class AppointmentPatientController extends Controller
         $apptPatient->doctor_id = $request->doctor_id;
         $apptPatient->time_in = $request->time_in;
         $apptPatient->time_out = $request->time_out;
-        $apptPatient->user_id = Auth::user()->id;
+        $apptPatient->user_id = $user->id;
+        $apptPatient->company_id = $user-> company_id;
         $apptPatient->save();
         return response()->json([
             'appointmentPatient'=> $apptPatient

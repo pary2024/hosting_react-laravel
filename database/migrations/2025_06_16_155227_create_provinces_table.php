@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('doctors', function (Blueprint $table) {
+         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->string('speciatly')->nullable();
-            $table->string('email')->nullable();
-            $table->string('image')->nullable();
-            $table->enum('status', ['available','on leave'])->default('available');
+            $table->foreignId('company_id')->constrained('companies');
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('doctors');
+        Schema::dropIfExists('provinces');
     }
 };

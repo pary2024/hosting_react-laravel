@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('appointment_students', function (Blueprint $table) {
              $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('companies');
             $table->foreignId('student_id')->constrained('students')->cascadeOnDelete();
             $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
             $table->date('date')->nullable();

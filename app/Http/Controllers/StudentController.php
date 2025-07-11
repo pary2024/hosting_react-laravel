@@ -9,16 +9,24 @@ use Illuminate\Support\Facades\Validator;
 
 class StudentController extends Controller
 {
-    public function index(){
-        $students = Student::with([
-            'user:id,name',
-            'school:id,name'
-        ])->get();
-        return response()->json([
-            "students"=> $students
-        ],201);
-    }
+   public function index()
+{
+    $user = Auth::user();
+
+    $students = Student::with([
+        'user:id,name',
+        'school:id,name'
+    ])
+    ->where('company_id', $user->company_id)  // filter by company
+    ->get();
+
+    return response()->json([
+        "students" => $students
+    ], 200);
+}
+
     public function store(Request $request){
+        $user = Auth::user();
         $validate = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'school_id' => 'required|exists:schools,id',
@@ -36,8 +44,10 @@ class StudentController extends Controller
     $students = new Student();
     $students->name = $request->name;
     $students->school_id= $request->school_id;
-    $students->user_id = Auth::user()->id;
+    $students->user_id = $user->id;
+    $students->company_id = $user-> company_id;
     $students->gender = $request->gender;
+    $students->birth_day = $request->birth_day; 
     $students->age = $request->age;
     $students->status = $request->status;
     $students->parents = $request->parents;

@@ -9,6 +9,7 @@ class Message extends Model
     //
     protected $fillable = [
     'user_id',
+    'company_id',
     'patient_id',
     'phone',
     'note',
@@ -18,6 +19,9 @@ class Message extends Model
     }
     public function patient(){
         return $this->belongsTo(Patient::class,'patient_id');    
+    }
+    public function company(){
+        return $this -> belongsTo(Company::class,'company_id');
     }
 
 }

@@ -9,6 +9,7 @@ class InvoiceStudent extends Model
     //
     protected $fillable = [
     'user_id',
+    'company_id',
     'student_id',
     'treat_id',
     'pay_id',
@@ -26,6 +27,9 @@ class InvoiceStudent extends Model
     }
     public function pay(){
         return $this->belongsTo(PerPay::class,'pay_id');
+    }
+    public function company(){
+        return $this ->belongsTo(Company::class,'company_id');
     }
 
 }

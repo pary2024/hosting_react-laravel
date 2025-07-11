@@ -9,58 +9,60 @@ use Illuminate\Support\Facades\Validator;
 
 class PatientController extends Controller
 {
-        public function index(){
-            $patients = Patient::with([
-                'user:id,name',
-                'province:id,name',
-                'treat:id,name'
-            ])->orderBy('id', 'desc')->get();
-            return response()->json([
-                "patients"=> $patients
-            ],201);
-        }
-        public function store(Request $request){
-           $validate = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'province_id' => 'required|exists:provinces,id',
-            'treat_id' => 'required|exists:treats,id',
-            'age' => 'required|integer|min:0|max:150',
-            'gender' => 'required|in:male,female,other', // adjust as needed
-            'phone' => 'required|string|max:20', // or use regex for format
-            'career' => 'nullable|string|max:255',
-            'status' => 'required|in:active,recovered,chronic', // or boolean if appropriate
-         ]);
+        public function index() {
+    $user = Auth::user();
 
-        if ($validate->fails()) {
-            return response()->json(['errors' => $validate->errors()], 422);
-        }
-        $patients = new Patient();
-        $patients->name = $request->name;
-        $patients->user_id = Auth::user()->id;
-        $patients->province_id =  $request-> province_id;
-        $patients->treat_id = $request->treat_id;
-        $patients->gender = $request->gender;
-        $patients->phone = $request->phone;
-        $patients->status = $request->status;
-        $patients->career = $request->career;
-        $patients->age = $request->age;
-        $patients->save();
-        return response()->json([
-            'patients'=> $patients
-        ],201);
-        }
-        public function delete ($id){
-            $patients = Patient::find($id);
-            if (!$patients) {
+    $patients = Patient::with([
+            'user:id,name',
+            'province:id,name',
+            
+        ])
+        ->where('company_id', $user->company_id) 
+        ->get();
+
+    return response()->json([
+        "patients" => $patients
+    ], 200); 
+}
+
+       public function store(Request $request){
+                $user = Auth::user();
+
+                $validate = Validator::make($request->all(), [
+                    'name' => 'required|string|max:255',
+                    'province_id' => 'required|exists:provinces,id',
+                    'age' => 'nullable|integer|min:0|max:150',
+                    'gender' => 'required|in:male,female,other',
+                    'phone' => 'required|string|max:20',
+                    'career' => 'nullable|string|max:255',
+                    'status' => 'required|in:active,recovered,chronic',
+                ]);
+
+                if ($validate->fails()) {
+                    return response()->json(['errors' => $validate->errors()], 422);
+                }
+
+                // Calculate daily number
+                $today = now()->startOfDay();
+                $countToday = Patient::whereDate('created_at', $today)->count();
+                $dailyNumber = $countToday + 1;
+
+                $patient = new Patient();
+                $patient->name = $request->name;
+                $patient->user_id = $user->id;
+                $patient->company_id = $user->company_id;
+                $patient->province_id = $request->province_id;
+                $patient->gender = $request->gender;
+                $patient->phone = $request->phone;
+                $patient->status = $request->status;
+                $patient->career = $request->career;
+                $patient->age = $request->age;
+                $patient->daily_number = $dailyNumber;
+                $patient->save();
+
                 return response()->json([
-                    'message' => 'Patient not found'
-                ],404);
+                    'patients' => $patient
+                ], 201);
             }
-            $patients-> delete();
-            return response()->json([
-                'message' => 'patient delete success'
-            ],201);
-            
-            
-        }
+
 }

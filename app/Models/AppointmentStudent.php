@@ -9,6 +9,7 @@ class AppointmentStudent extends Model
     //
     protected $fillable = [
     'user_id',
+    'company_id',
     'student_id',
     'doctor_id',
     'date',
@@ -24,6 +25,10 @@ class AppointmentStudent extends Model
     }
     public function doctor(){
         return $this->belongsTo(Doctor::class,'doctor_id');
+    }
+    public function company(){
+        return $this -> belongsTo(Company::class,'company_id');
+        
     }
     
 

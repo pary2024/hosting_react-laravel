@@ -25,6 +25,7 @@ class User extends Authenticatable
      protected $fillable = [
         'name',
         'email',
+        'company_id',
         'password',
         'phone',
         'status',
@@ -64,4 +65,7 @@ class User extends Authenticatable
     public function invoiceStudents() { return $this->hasMany(InvoiceStudent::class); }
     public function invoicePatients() { return $this->hasMany(InvoicePatient::class); }
     public function messages() { return $this->hasMany(Message::class); }
+    public function company(){
+        return $this -> belongsTo(Company::class,'company_id');
+    }
 }

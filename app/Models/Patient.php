@@ -10,8 +10,8 @@ class Patient extends Model
     protected $fillable = [
     'name',
     'user_id',
+    'company_id',
     'province_id',
-    'treat_id',
     'age',
     'gender',
     'phone',
@@ -24,8 +24,8 @@ class Patient extends Model
     public function province(){
         return $this->belongsTo(Province::class,'province_id');
     }
-    public function treat(){
-        return $this->belongsTo(Treat::class,'treat_id');
+    public function company(){
+        return $this -> belongsTo(Company::class,'company_id');
     }
 
 }
