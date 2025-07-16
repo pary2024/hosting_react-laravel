@@ -12,7 +12,6 @@ class CompanyController extends Controller
     public function index()
     {
         $companies = Company::all()->map(function ($company) {
-            // If using cloud storage URL
             $company->image = $company->image
                 ? Storage::disk('s3')->url($company->image)
                 : null;
@@ -24,13 +23,14 @@ class CompanyController extends Controller
         ], 200);
     }
 
+    // ✅ 2. Store a new company
     public function store(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'name' => 'required',
             'phone' => 'required',
             'address' => 'required',
-            'email' => 'required',
+            'email' => 'required|email',
             'image' => 'nullable|image|max:2048',
         ]);
 
@@ -48,14 +48,20 @@ class CompanyController extends Controller
         $company->email = $request->email;
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = 'company/' . uniqid() . '.' . $image->getClientOriginalExtension();
+            try {
+                $image = $request->file('image');
+                $imageName = 'company/' . uniqid() . '.' . $image->getClientOriginalExtension();
 
-            // Upload to cloud (S3)
-            Storage::disk('s3')->put($imageName, file_get_contents($image));
-            Storage::disk('s3')->setVisibility($imageName, 'public');
+                Storage::disk('s3')->put($imageName, file_get_contents($image));
+                Storage::disk('s3')->setVisibility($imageName, 'public');
 
-            $company->image = $imageName;
+                $company->image = $imageName;
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Image upload failed',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
         }
 
         $company->save();
