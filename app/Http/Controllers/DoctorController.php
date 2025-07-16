@@ -10,23 +10,24 @@ use Illuminate\Support\Facades\Validator;
 
 class DoctorController extends Controller
 {
-    public function index()
+        public function index()
     {
         $user = Auth::user();
-
+    
         $doctors = Doctor::with(['user:id,name'])
             ->where('company_id', $user->company_id)
             ->get()
             ->map(function ($d) {
-                $d->image = $d->image ? Storage::disk('s3')->url($d->image) : null;
+                $d->image = $d->image ? Storage::url($d->image) : null;
                 return $d;
             });
-
+    
         return response()->json([
             "doctors" => $doctors,
             "status" => "success",
         ], 200);
     }
+
 
     public function store(Request $request)
     {
@@ -56,13 +57,21 @@ class DoctorController extends Controller
         $doctor->status = $request->status;
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $imageName = 'doctor/' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-            Storage::disk('s3')->put($imageName, file_get_contents($file));
-            Storage::disk('s3')->setVisibility($imageName, 'public');
-
-            $doctor->image = $imageName;
+            try {
+                $file = $request->file('image');
+                $imageName = 'doctor/' . uniqid() . '.' . $file->getClientOriginalExtension();
+        
+                Storage::disk('s3')->put($imageName, file_get_contents($file));
+                Storage::disk('s3')->setVisibility($imageName, 'public');
+        
+                $doctor->image = $imageName;
+            } catch (\Exception $e) {
+                Log::error('Image upload failed: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'Image upload failed',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
         }
 
         $doctor->save();
