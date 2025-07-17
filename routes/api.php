@@ -37,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/doctor/{id}',[DoctorController::class,'destroy']);
 
             Route::get('/report', [ReportController::class, 'report']);
+
+            Route::delete('/patient/{id}',[PatientController::class,'delete']);
         });
         Route::middleware('super admin')->group(function(){
           Route::get('/company',[CompanyController::class,'index']);
@@ -88,7 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
             //patients
             Route::get('/patient',[PatientController::class,'index']);
             Route::post('/patient',[PatientController::class,'store']);
-            Route::delete('/patient/{id}',[PatientController::class,'delete']);
+            
 
 
             //inviocePatient
