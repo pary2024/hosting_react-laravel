@@ -19,7 +19,9 @@ class DoctorController extends Controller
         ->where('company_id', $user->company_id)
         ->get()
         ->map(function ($d) {
-            $d->image = $d->image ? Storage::url($d->image) : null;
+           $d->image = (!empty($d->image) && Storage::exists($d->image))
+                ? Storage::url($d->image)
+                : null;
             return $d;
         });
 
