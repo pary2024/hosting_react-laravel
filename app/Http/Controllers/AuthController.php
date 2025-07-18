@@ -56,7 +56,6 @@ public function login(Request $request)
         'token'   => $token,
         'user'    => $user,
         'company'=>  $company,
-        'roles'   => $user->getRoleNames(),
     ], 200);
 }
 
