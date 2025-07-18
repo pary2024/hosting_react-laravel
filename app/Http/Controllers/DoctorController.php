@@ -19,7 +19,7 @@ class DoctorController extends Controller
         ->where('company_id', $user->company_id)
         ->get()
         ->map(function ($d) {
-           $d->image = $d->image ? url('doctor/' . $d->image) : null;
+           $d->image = $d->image ? url('storage/doctor/' . $d->image) : null;
             return $d;
            
         });
@@ -60,7 +60,7 @@ class DoctorController extends Controller
         if ($request->hasFile('image')){
             $file = $request->file('image');
             $imageName = rand(111, 999999) . '.' . $file->getClientOriginalExtension();
-            $imagePath = public_path('doctor');
+            $imagePath = public_path('storage/doctor');
             $file->move($imagePath, $imageName);
             $doctor->image =$imageName;
         }
